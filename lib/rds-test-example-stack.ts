@@ -5,6 +5,8 @@ import * as ec2 from "@aws-cdk/aws-ec2";
 import * as lambda from "@aws-cdk/aws-lambda";
 import * as rds from "@aws-cdk/aws-rds";
 
+const THUNDRA_API_KEY = "THUNDRA_API_KEY";
+
 export class RdsTestExampleStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -31,24 +33,39 @@ export class RdsTestExampleStack extends cdk.Stack {
       securityGroups: [rdsSG],
     });
 
+    const thundraLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this,
+      "ThundraLayer",
+      "arn:aws:lambda:eu-west-1:269863060030:" +
+        "layer:thundra-lambda-node-layer-minified:93"
+    );
+
     const indexFunction = new lambda.Function(this, "DemoLambdaIndex", {
       vpc,
       runtime: lambda.Runtime.NODEJS_14_X,
+      layers: [thundraLayer],
       timeout: cdk.Duration.seconds(10),
-      handler: "index.handler",
+      handler: "thundra_handler.wrapper",
       code: lambda.Code.inline(`
         exports.handler = async () => ({ statusCode: 200, body: "index"});
       `),
+      environment: {
+        thundra_apiKey: THUNDRA_API_KEY,
+        thundra_agent_lambda_handler: "index.handler",
+      },
     });
 
     const dbFunction = new lambda.Function(this, "DemoLambdaDb", {
       vpc,
       runtime: lambda.Runtime.NODEJS_14_X,
-      handler: "index.handler",
+      layers: [thundraLayer],
+      handler: "thundra_handler.wrapper",
       code: lambda.Code.asset("lib/dbFunction"),
       securityGroups: [lambdaSG],
       environment: {
         DB_SECRET_ARN: database.secret?.secretArn ?? "",
+        thundra_apiKey: THUNDRA_API_KEY,
+        thundra_agent_lambda_handler: "index.handler",
       },
     });
 
