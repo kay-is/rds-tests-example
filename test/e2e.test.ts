@@ -6,10 +6,7 @@ const baseUrl = outputs.RdsTestExampleStack.ApiUrl;
 const get = (url: string) => new Promise((r) => http.get(url, r));
 
 describe("Lambda backed API Gateway", () => {
-  const times = 20;
-  beforeEach(() => {
-    jest.setTimeout(10000);
-  });
+  const times = 10;
 
   describe("index route", () => {
     it("1 call (cold-start)", async () => {
