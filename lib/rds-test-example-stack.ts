@@ -37,7 +37,7 @@ export class RdsTestExampleStack extends cdk.Stack {
       this,
       "ThundraLayer",
       "arn:aws:lambda:eu-west-1:269863060030:" +
-        "layer:thundra-lambda-node-layer-minified:93"
+        "layer:thundra-lambda-node-layer-minified:96"
     );
 
     const indexFunction = new lambda.Function(this, "DemoLambdaIndex", {
